@@ -5,7 +5,9 @@ const elSelectCategory = document.querySelector(".category__select");
 const elSelectSort = document.querySelector(".sort__select");
 const elFromCandyCount = document.querySelector(".fromcandy__count-input");
 const elToCandyCount = document.querySelector(".tocandy__count-input");
+const elBookmarkList = document.querySelector(".bookmark-list");
 
+const favoritePoke = []
 
 // Caetegory sort
 const weknesCategory = [];
@@ -49,6 +51,32 @@ function sortPoke(item , sortValue){
   }
 }
 
+//  Render bookmark
+function addBookmark(bookmark, node) {
+  elPokemonsList.innerHTML = "";
+  const elFragment = document.createDocumentFragment();
+  const elTemplate = document.querySelector(".poke__template").content;
+  bookmark.forEach((item) => {
+    const elPokeclone = elTemplate.cloneNode(true);
+    elPokeclone.querySelector(".poke__item");
+    elPokeclone.querySelector(".poke__name").textContent = item.name;
+    elPokeclone.querySelector(".poke__num").textContent = item.num;
+    elPokeclone.querySelector(".poke__img").src = item.img;
+    elPokeclone.querySelector(".poke__img").alt = item.name;
+    elPokeclone.querySelector(".poke__type").textContent = item.type.join(" ");
+    elPokeclone.querySelector(
+      ".poke__candy-count"
+    ).textContent = `Candy count: ${item.candy_count}`;
+    elPokeclone.querySelector(".poke__weigth").textContent = item.weight;
+    // elPokeclone.querySelector(".poke__spawn-chance").textContent = item.avg_spawns;
+    elPokeclone.querySelector(".poke__time").textContent = item.spawn_time;
+    elPokeclone.querySelector(".poke__weknes").textContent =
+      item.weaknesses.join(" ");
+    elPokeclone.querySelector(".poke__btn-star").dataset.pokeId = item.id;
+    elFragment.appendChild(elPokeclone);
+  });
+  node.appendChild(elFragment);
+}
 
 // Render pokemons items
 function renderPoke(poke){
@@ -68,52 +96,56 @@ function renderPoke(poke){
     // elPokeclone.querySelector(".poke__spawn-chance").textContent = item.avg_spawns;
     elPokeclone.querySelector(".poke__time").textContent = item.spawn_time;
     elPokeclone.querySelector(".poke__weknes").textContent = item.weaknesses.join(" ");
+    elPokeclone.querySelector(".poke__btn-star").dataset.pokeId = item.id;
     elFragment.appendChild(elPokeclone);
   });
   elPokemonsList.appendChild(elFragment);
 }
 renderPoke(pokemons);
 
+   elPokemonsList.addEventListener("click", (evt) => {
+     if (evt.target.matches(".poke__btn-star")) {
+       const pokeBtn = evt.target.dataset.pokeId;
+       const pokeFindId = pokemons.find((item) => item.id == pokeBtn);
+       if (!favoritePoke.includes(pokeFindId)) {
+         favoritePoke.push(pokeFindId);
+         addBookmark(favoritePoke, elBookmarkList);
+         renderPoke(pokemons)
+       }
+     }
+     console.log(favoritePoke);
+   });
 
-
-
-// Form listen for search and sort
-elPokeForm.addEventListener("submit" , (evt) => {
-  evt.preventDefault();
-  const inputValue = elSearchInput.value;
-  const sortValueSelect = elSelectSort.value.trim();
-  const regexValue = new RegExp(inputValue, "gi");
-  const searchPoke = pokemons.filter(item => {
-    return (
-      item.name.match(regexValue) &&
-      (elSelectCategory.value == "all" ||
-      item.weaknesses.includes(elSelectCategory.value)) &&
-      (elFromCandyCount.value == "" ||
-      Number(elFromCandyCount.value) <= item.candy_count) &&
-      (elToCandyCount.value == "" ||
-      Number(elToCandyCount.value) >= item.candy_count)
-      );
+  
+  // Form listen for search and sort
+  elPokeForm.addEventListener("submit" , (evt) => {
+    evt.preventDefault();
+    const inputValue = elSearchInput.value;
+    const sortValueSelect = elSelectSort.value.trim();
+    const regexValue = new RegExp(inputValue, "gi");
+    const searchPoke = pokemons.filter(item => {
+      return (
+        item.name.match(regexValue) &&
+        (elSelectCategory.value == "all" ||
+        item.weaknesses.includes(elSelectCategory.value)) &&
+        (elFromCandyCount.value == "" ||
+        Number(elFromCandyCount.value) <= item.candy_count) &&
+        (elToCandyCount.value == "" ||
+        Number(elToCandyCount.value) >= item.candy_count)
+        );
+      })
+      if(searchPoke.length > 0){
+        sortPoke(searchPoke,sortValueSelect);
+        renderOption(pokemons)
+        renderPoke(searchPoke);
+      }else{
+        elPokemonsList.innerHTML = "not found poke"
+      }
     })
-    if(searchPoke.length > 0){
-      sortPoke(searchPoke,sortValueSelect);
-      renderOption(pokemons)
-      renderPoke(searchPoke);
-    }else{
-      elPokemonsList.innerHTML = "not found poke"
-    }
-  })
-  
-  renderPoke(pokemons);
-
-
-const favoritePoke = [];
- elPokemonsList.addEventListener("click" , (evt) => {
-  const elStarBtn = document.querySelector(".star-button");
-  if(evt.target.matches("elStarBtn")){
-    const elStarBtn = evt.target.dataset.pokeID = "id"
-    const canvasFindPoke = pokemons.find(item => item.id == canvasBtn);
-    favoritePoke.push(canvasFindPoke);
-  }
- })
-  
-  
+    
+    renderPoke(pokemons);
+    
+    
+ 
+    
+    

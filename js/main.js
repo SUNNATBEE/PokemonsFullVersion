@@ -11,6 +11,7 @@ const elToCandyCount = document.querySelector(".tocandy__count-input");
 
 // Get BookmarkPoke 
 const elBookmarkList = document.querySelector(".bookmark-list");
+const elStartBtn = document.querySelector(".poke__btn-star");
 const elPokeCount = document.querySelector(".count-pokemons");
 const favoritePoke = []
 const pokeOfcanavs = document.querySelector(".poke-count");
@@ -132,14 +133,33 @@ function renderPoke(poke , regexMark = ""){
     
     // Listen event deligation for push poke start
     elPokemonsList.addEventListener("click", (evt) => {
+      
       if (evt.target.matches(".poke__btn-star")) {
-        const pokeBtn = evt.target.dataset.pokeId;
+        
+        const pokeBtn = Number(evt.target.dataset.pokeId);
+        
         const pokeFindId = pokemons.find((item) => item.id == pokeBtn);
-        const dat = evt.target;
-        dat.classList.add("favorited");
+        
+        const findDeleteBookmark = favoritePoke.findIndex(item => item.id == pokeBtn);
+        
+        
         if (!favoritePoke.includes(pokeFindId)) {
+          
+          evt.target.classList.add("favorited");
           favoritePoke.push(pokeFindId);
           addBookmark(favoritePoke, elBookmarkList);
+          
+          console.log(favoritePoke);
+          
+        } else if (evt.target.className == "btn poke__btn-star favorited") {
+          
+          evt.target.classList.remove("favorited");
+          
+          favoritePoke.splice(findDeleteBookmark, 1);
+          
+          addBookmark(favoritePoke, elBookmarkList);
+          
+          console.log(favoritePoke);
         }
       }
     });
@@ -149,49 +169,57 @@ function renderPoke(poke , regexMark = ""){
     // Listen Bookmark event deligation for delete poke start
     elBookmarkList.addEventListener("click", (evt) => {
       if (evt.target.matches(".js-delete-bookmark")) {
-        const deleteBookmark = evt.target.dataset.deleteID;
-        const findDeleteBookmark = favoritePoke.findIndex(
-          (item) => item.id == deleteBookmark
+        var deleteBookmark = evt.target.dataset.deleteID;
+        const findDeleteBookmark = favoritePoke.findIndex((item) => {
+          return item.id == deleteBookmark;
+        });
+        favoritePoke.splice(findDeleteBookmark, 1);
+        addBookmark(favoritePoke, elBookmarkList);
+      }
+      const elFavoriteStar = document.querySelectorAll(".favorited");
+      
+      // const pokeFindId = pokemons.find((item) => item.id == deleteBookmark);
+      
+      
+      if (pokeFindId) {
+        elFavoriteStar.classList.remove("favorited");
+        
+        console.log(favoritePoke);
+      }
+    });
+    // Listen Bookmark event deligation for delete poke start
+    
+    
+    // Form listen for search and sort star
+    elPokeForm.addEventListener("submit" , (evt) => {
+      evt.preventDefault();
+      const inputValue = elSearchInput.value;
+      const sortValueSelect = elSelectSort.value.trim();
+      const regexValue = new RegExp(inputValue, "gi");
+      const searchPoke = pokemons.filter(item => {
+        return (
+          item.name.match(regexValue) &&
+          (elSelectCategory.value == "all" ||
+          item.weaknesses.includes(elSelectCategory.value)) &&
+          (elFromCandyCount.value == "" ||
+          Number(elFromCandyCount.value) <= item.candy_count) &&
+          (elToCandyCount.value == "" ||
+          Number(elToCandyCount.value) >= item.candy_count)
           );
-          favoritePoke.splice(findDeleteBookmark, 1);
-          addBookmark(favoritePoke, elBookmarkList);
-          const dat = document.querySelector(".favorited");
-          dat.classList.remove("favorited");
-        }
-      });
-      // Listen Bookmark event deligation for delete poke start
-      
-      
-      // Form listen for search and sort star
-      elPokeForm.addEventListener("submit" , (evt) => {
-        evt.preventDefault();
-        const inputValue = elSearchInput.value;
-        const sortValueSelect = elSelectSort.value.trim();
-        const regexValue = new RegExp(inputValue, "gi");
-        const searchPoke = pokemons.filter(item => {
-          return (
-            item.name.match(regexValue) &&
-            (elSelectCategory.value == "all" ||
-            item.weaknesses.includes(elSelectCategory.value)) &&
-            (elFromCandyCount.value == "" ||
-            Number(elFromCandyCount.value) <= item.candy_count) &&
-            (elToCandyCount.value == "" ||
-            Number(elToCandyCount.value) >= item.candy_count)
-            );
-          })
-          if(searchPoke.length > 0){
-            sortPoke(searchPoke,sortValueSelect);
-            renderOption(pokemons)
-            renderPoke(searchPoke, regexValue);
-          }else{
-            elPokemonsList.innerHTML = "not found poke"
-          }
         })
-        // Form listen for search and sort finish
-        
-        renderPoke(pokemons);
-        
-        
-        
-        
-        
+        if(searchPoke.length > 0){
+          sortPoke(searchPoke,sortValueSelect);
+          renderOption(pokemons)
+          renderPoke(searchPoke, regexValue);
+        }else{
+          elPokemonsList.innerHTML = "not found poke"
+        }
+      })
+      // Form listen for search and sort finish
+      
+      renderPoke(pokemons);
+      
+      
+      
+      
+      
